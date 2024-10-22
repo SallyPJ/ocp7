@@ -1,15 +1,10 @@
 import pandas as pd
-from itertools import combinations
 import time
 
-
 CSV_FILE = "../datasets/actions_list.csv"
+BUDGET = 500  # Définir le budget comme une variable globale
+
 # Charger et nettoyer les données
-'''
-Génération des combinaisons : O(2^n)
-Calcul des profits : 0(n)
-Complexité totale : O(2^n * n)
-'''
 def upload_data(CSV_FILE):
     df = pd.read_csv(CSV_FILE)
     df.rename(columns={'Coût par action (en euros)': 'cost', 'Bénéfice (après 2 ans)': 'profit'}, inplace=True)
@@ -24,33 +19,27 @@ def upload_data(CSV_FILE):
 
     return df
 
+# Fonction pour trouver la meilleure combinaison d'actions avec programmation dynamique
+def find_best_combination_dp(actions, budget=BUDGET):
+    n = len(actions)
+    # Créer un tableau pour stocker le meilleur profit pour chaque budget
+    dp = [0] * (budget + 1)
+    # Créer un tableau pour stocker les actions sélectionnées pour chaque budget
+    selected_actions = [[] for _ in range(budget + 1)]
 
-# Fonction pour calculer le profit total et le coût d'une combinaison
-def calculate_profit_combinations(combinaison):
-    total_cost = sum(action['cost'] for action in combinaison)
-    total_profit = sum(action['profit_amount'] for action in combinaison)
-    return total_cost, total_profit
+    # Parcourir chaque action
+    for action in actions:
+        cost = int(action['cost'])
+        profit = action['profit_amount']
 
+        # Mettre à jour le tableau dp de manière descendante pour éviter d'écraser les données
+        for b in range(budget, cost - 1, -1):
+            if dp[b - cost] + profit > dp[b]:
+                dp[b] = dp[b - cost] + profit
+                selected_actions[b] = selected_actions[b - cost] + [action]
 
-# Fonction pour trouver la meilleure combinaison d'actions
-def find_best_combination(actions, budget=500):
-    best_profit = 0
-    best_combination = []
-    total_combinations = 0
-
-    # Générer toutes les combinaisons possibles
-    for r in range(1, len(actions) + 1):
-        for combinaison in combinations(actions, r):
-            total_combinations += 1
-            total_cost, total_profit = calculate_profit_combinations(combinaison)
-
-            # Vérifier si le coût total est inférieur ou égal au budget
-            if total_cost <= budget and total_profit > best_profit:
-                best_profit = total_profit
-                best_combination = combinaison
-
-    return best_combination, best_profit,total_combinations
-
+    # Le meilleur profit sera à dp[budget], avec les actions correspondantes
+    return selected_actions[budget], dp[budget]
 
 # Charger les données et préparer les actions
 df = upload_data(CSV_FILE)
@@ -58,8 +47,8 @@ actions = df.to_dict('records')
 
 # Démarrer le chronomètre uniquement pour l'algorithme
 start_time = time.time()
-# Trouver la meilleure combinaison d'actions dans le budget
-best_combination, best_profit, total_combinations = find_best_combination(actions)
+# Trouver la meilleure combinaison d'actions dans le budget avec programmation dynamique
+best_combination, best_profit = find_best_combination_dp(actions)
 # Arrêter le chronomètre
 end_time = time.time()
 # Calculer la durée d'exécution
@@ -71,10 +60,9 @@ best_combination_cost = sum(action['cost'] for action in best_combination)
 # Premier tableau : Résumé des résultats
 summary_df = pd.DataFrame({
     "Durée d'exécution (s)": [execution_time],
-    "Nombre de combinaisons": [total_combinations],
-    "Coût total de la meilleur combinaison d'actions (€)": [best_combination_cost],
+    "Nombre de combinaisons (approximé)": [len(actions) * BUDGET],
+    "Coût total de la meilleure combinaison d'actions (€)": [best_combination_cost],
     "Profit de la meilleure combinaison (€)": [best_profit]
-
 })
 
 # Deuxième tableau : Meilleure combinaison d'actions
