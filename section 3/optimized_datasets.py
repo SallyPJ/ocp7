@@ -30,25 +30,25 @@ def upload_data(CSV_FILE):
 
 # Fonction pour trouver la meilleure combinaison d'actions avec programmation dynamique
 def find_best_combination_dp(actions, budget=BUDGET):
-    n = len(actions)
+
     # Créer un tableau pour stocker le meilleur profit pour chaque budget
-    dp = [0] * (budget + 1)
+    max_profit_for_budget = [0] * (budget + 1)
     # Créer un tableau pour stocker les actions sélectionnées pour chaque budget
-    selected_actions = [[] for _ in range(budget + 1)]
+    best_action_combination = [[] for _ in range(budget + 1)]
 
     # Parcourir chaque action
     for action in actions:
-        cost = int(action['cost'])
+        cost = action['cost']
         profit = action['profit_amount']
 
         # Mettre à jour le tableau dp de manière descendante pour éviter d'écraser les données
         for b in range(budget, cost - 1, -1):
-            if dp[b - cost] + profit > dp[b]:
-                dp[b] = dp[b - cost] + profit
-                selected_actions[b] = selected_actions[b - cost] + [action]
+            if max_profit_for_budget[b - cost] + profit > max_profit_for_budget[b]:
+                max_profit_for_budget[b] = max_profit_for_budget[b - cost] + profit
+                best_action_combination[b] = best_action_combination[b - cost] + [action]
 
     # Le meilleur profit sera à dp[budget], avec les actions correspondantes
-    return selected_actions[budget], dp[budget]
+    return best_action_combination[budget], max_profit_for_budget[budget]
 
 def process_datasets(csv_files):
     for file in csv_files:
