@@ -28,8 +28,9 @@ def clean_dataset(dataframe):
 
 
 def calculate_profit_combinations(combination):
-
+    # Calcule le coût total de toutes les actions d'une combinaison
     total_cost = sum(action['cost'] for action in combination)
+    # Calcule le profit total de la combinaison
     total_profit = sum(action['profit_amount'] for action in combination)
     return total_cost, total_profit
 
@@ -39,7 +40,10 @@ def find_best_combination(actions, budget=BUDGET):
     best_combination = []
     total_combinations = 0
 
-    # Générer toutes les combinaisons possibles
+    # Générer toutes les combinaisons possibles,
+    # r va tester les combinaisons de 1 à n actions
+    # Les combinaisons de taille r : Si actions = ["action1", "action2", "action3"]
+    # et r = 2, alors elle créera : ("action1", "action2"), ("action1", "action3"), ("action2", "action3").
     for r in range(1, len(actions) + 1):
         for combination in combinations(actions, r):
             total_combinations += 1
@@ -71,15 +75,31 @@ def display_results(execution_time, best_combination, best_profit, best_combinat
     print("Meilleure combinaison d'actions :")
     print(best_combination_dataframe)
 
+def plot_complexity(sizes, execution_times):
+    plt.plot(sizes, execution_times, marker='o')
+    plt.xlabel("Taille de l'entrée (nombre d'actions)")
+    plt.ylabel("Temps d'exécution (secondes)")
+    plt.title("Complexité Temporelle de l'Algorithme")
+    plt.grid(True)
+    plt.show()
 
 def main():
     raw_data = load_dataset(CSV_FILE)
     cleaned_data = clean_dataset(raw_data)
     actions = cleaned_data.to_dict('records')
-    start_time = time.time()
-    best_combination, best_profit, best_combination_cost, total_combinations = find_best_combination(actions)
-    end_time = time.time()
-    execution_time = end_time - start_time
+    sizes = []
+    execution_times = []
+    step = 1
+    for size in range(step, len(actions) + 1, step):
+        sample_actions = actions[:size]
+        start_time = time.time()
+        best_combination, best_profit, best_combination_cost, total_combinations = find_best_combination(sample_actions, BUDGET)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        sizes.append(size)
+        execution_times.append(execution_time)
+
+    plot_complexity(sizes, execution_times)
     display_results(execution_time, best_combination, best_profit, best_combination_cost, total_combinations)
 
 
