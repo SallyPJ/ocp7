@@ -44,6 +44,9 @@ def find_best_combination(actions, budget=BUDGET):
     # r va tester les combinaisons de 1 à n actions
     # Les combinaisons de taille r : Si actions = ["action1", "action2", "action3"]
     # et r = 2, alors elle créera : ("action1", "action2"), ("action1", "action3"), ("action2", "action3").
+    #combinations de itertools est un outil qui permet de créer tous les groupes possibles d’éléments dans une liste,
+    # en choisissant un nombre fixe d’éléments à la fois. Par exemple, si on veut créer des groupes de 2 éléments à partir d'une liste d'actions,
+    # combinations va générer tous les groupes de 2 possibles, sans répéter les mêmes éléments dans un ordre différent.
     for r in range(1, len(actions) + 1):
         for combination in combinations(actions, r):
             total_combinations += 1
