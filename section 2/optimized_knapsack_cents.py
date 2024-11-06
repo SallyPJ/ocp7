@@ -1,5 +1,7 @@
 import pandas as pd
 import time
+from memory_profiler import profile
+
 
 CSV_FILE = "../datasets/actions_list.csv"
 BUDGET = 50000  # Le budget est maintenant en centimes (500 euros * 100)
@@ -18,6 +20,7 @@ def clean_dataset(dataframe):
     return dataframe
 
 # Fonction pour trouver la meilleure combinaison d'actions avec programmation dynamique
+@profile
 def find_best_combination(actions, budget=BUDGET):
     # Créer un tableau pour stocker le meilleur profit pour chaque budget (de 0 à 50000). Commence à 0 d'où le + 1
     max_profit_for_budget = [0] * (budget + 1)
